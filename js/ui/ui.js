@@ -1,4 +1,4 @@
-window.helloAI = function() {
+window.helloUI = function() {
     console.log("AI ready");
 }
 
