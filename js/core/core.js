@@ -8,25 +8,6 @@ window.drawPlayerBody = function(ctx, x, y) {
 
 }
 
-window.helloCore = function() {
-    hello();
-    bye();
-}
-
-function hello(){
-    console.log("Hello from Core!");
-}
-
-function bye(){
-    console.log("Bye from Core!");
-}
-hello()
-
-function helloCore() {
-    console.log("⚙️ Core Mechanics ready");
-    return { status: "ready", module: "core" };
-}
-
 // Функция для игрового цикла (заглушка)
 window.startGameLoop = function() {
     console.log("🎮 Game loop initialized");
