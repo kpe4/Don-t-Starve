@@ -35,3 +35,7 @@ helloCore();
 window.GameState.init();
 console.log("Game state:", window.GameState.getState());
 window.GameState.updateScore(10);
+const enemy1 = window.GameAI.addEnemy(100, 100, 50);
+const enemy2 = window.GameAI.addEnemy(300, 200, 75);
+window.GameAI.updateEnemies();
+console.log("Enemies count:", window.GameAI.getEnemies().length);
