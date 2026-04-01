@@ -49,5 +49,15 @@ window.EffectsManager = {
             ctx.arc(e.x, e.y, radius, 0, Math.PI * 2);
             ctx.fill();
         }
-    }
+    },
+    //убедиться, что в методе addPickupEffect есть этот код:
+    addPickupEffect: function(x, y) {
+        this.effects.push({
+            x: x, y: y,
+            lifetime: 0.4,
+            maxLifetime: 0.4,
+            type: 'pickup'
+        });
+        SoundManager.play('gather');  // <-- Проверить, что эта строка есть
+    },
 };
