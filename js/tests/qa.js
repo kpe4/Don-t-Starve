@@ -1,3 +1,7 @@
+//-------------------------------------------------------------
+//  Global Tests @Gabryelf (Valeev Sergey)       01.03.2026
+//-------------------------------------------------------------
+
 function helloQA() {
     console.log("✅ Integration & QA ready");
     

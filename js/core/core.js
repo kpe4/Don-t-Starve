@@ -1,3 +1,6 @@
+//---------------------------------------------------------------
+// Создание игрока, сбор ресурсов, смена дня и ночи, игровой цикл
+//---------------------------------------------------------------
 let nameGroup = "Core Mechanics"
 // Функция для рисования тела игрока (жёлтый круг)
 window.drawPlayerBody = function(ctx, x, y) {
@@ -205,13 +208,22 @@ window.CoreGame = {
     
     // Атака врага
     attack: function() {
-        if(!GameState.gameActive) return;
-        
-        const nearest = GameAI.findNearestEnemy(
-            GameState.player.x, 
-            GameState.player.y, 
-            GameBalance.ATTACK_RADIUS
-        );
+    if(!GameState.gameActive) return;
+    
+    const nearest = GameAI.findNearestEnemy(
+        GameState.player.x, 
+        GameState.player.y, 
+        GameBalance.ATTACK_RADIUS
+    );
+    
+    if(nearest) {
+        const enemyId = nearest.id;
+        const defeated = GameAI.damageEnemy(enemyId, GameBalance.PLAYER_DAMAGE);
+        EffectsManager.addHitEffect(nearest.x, nearest.y);  // <-- эффект удара
+        SoundManager.play('click');  // <-- звук
+        // ...
+    }
+}
         
         if(nearest) {
             const enemyId = nearest.id;
@@ -273,6 +285,9 @@ window.CoreGame = {
         // Кнопки
         drawUIButtons(GameRenderer.ctx);
         
+        // После отрисовки UI панели и кнопок добавить:
+        // Эффекты
+        EffectsManager.draw(GameRenderer.ctx);
         // Индикатор цели
         if(GameState.player.targetX !== null) {
             const ctx = GameRenderer.ctx;

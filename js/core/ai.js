@@ -1,20 +1,31 @@
+// ===== AI INIT =====
+//-------------------------------
+// Создание и функционал врага
+//-------------------------------
+
 function helloAI() {
     console.log("AI ready");
 }
+
 window.helloAI = function() {
     hello();
     bye();
 }
+
 function hello() {
     console.log("AI ready");
 }
+
 function bye() {
     console.log("AI ВСЕ!");
 }
+
 function helloAI() {
     console.log("🤖 AI & Logic ready");
 }
 
+
+// ===== GAME AI (ОСНОВНОЙ) =====
 window.GameAI = {
     enemies: [],
     
@@ -32,7 +43,7 @@ window.GameAI = {
         return enemy;
     },
     
-    // ОБНОВЛЕНО: движение врагов к игроку
+    // движение врагов к игроку
     updateEnemies: function(delta, playerX, playerY) {
         const speed = GameBalance.ENEMY_SPEED;
         
@@ -42,7 +53,7 @@ window.GameAI = {
             const dy = playerY - e.y;
             const dist = Math.hypot(dx, dy);
             
-            if(dist > 0.01 && dist < 300) {  // двигаются только если игрок рядом
+            if(dist > 0.01 && dist < 300) {
                 const move = speed * delta;
                 e.x += (dx / dist) * move;
                 e.y += (dy / dist) * move;
@@ -54,7 +65,7 @@ window.GameAI = {
         }
     },
     
-    // НОВЫЙ МЕТОД: спавн врага на краю карты
+    // спавн врага
     spawnEnemy: function() {
         const side = Math.random() > 0.5 ? 50 : 750;
         const y = 150 + Math.random() * 350;
@@ -62,7 +73,7 @@ window.GameAI = {
         this.addEnemy(side, y, hp);
     },
     
-    // Проверка атаки врага на игрока
+    // проверка атаки
     checkAttack: function(playerX, playerY, radius = 42) {
         for(let e of this.enemies) {
             if(Math.hypot(playerX - e.x, playerY - e.y) < radius) {
@@ -72,7 +83,7 @@ window.GameAI = {
         return null;
     },
     
-    // Поиск ближайшего врага для атаки игроком
+    // ближайший враг
     findNearestEnemy: function(playerX, playerY, range) {
         let nearest = null;
         let minDist = range;
@@ -87,20 +98,20 @@ window.GameAI = {
         return nearest;
     },
     
-    // Нанесение урона врагу
+    // урон
     damageEnemy: function(enemyId, damage) {
         const enemy = this.enemies.find(e => e.id === enemyId);
         if(enemy) {
             enemy.hp -= damage;
             if(enemy.hp <= 0) {
                 this.removeEnemy(enemyId);
-                return true;  // враг побежден
+                return true;
             }
         }
         return false;
     },
     
-    // Удаление врага
+    // удаление
     removeEnemy: function(enemyId) {
         const index = this.enemies.findIndex(e => e.id === enemyId);
         if(index !== -1) {
@@ -109,12 +120,10 @@ window.GameAI = {
         }
     },
     
-    // Получение списка врагов
     getEnemies: function() {
         return this.enemies;
     },
     
-    // Очистка всех врагов
     clearEnemies: function() {
         this.enemies = [];
     }
@@ -122,6 +131,8 @@ window.GameAI = {
 
 helloAI();
 
+
+// ===== ПЕРЕОПРЕДЕЛЕНИЕ (оставлено как есть, но исправлен updateEnemies) =====
 window.GameAI = {
     enemies: [],
     
@@ -138,10 +149,24 @@ window.GameAI = {
         return enemy;
     },
     
-    updateEnemies: function() {
+    // ✅ ИСПРАВЛЕНО
+    updateEnemies: function(delta, playerX, playerY) {
+        const speed = GameBalance.ENEMY_SPEED;
+        
         for(let i = 0; i < this.enemies.length; i++) {
-            // Логика движения врагов (будет позже)
-            console.log(`👾 Enemy ${i} position: (${this.enemies[i].x}, ${this.enemies[i].y})`);
+            const e = this.enemies[i];
+            const dx = playerX - e.x;
+            const dy = playerY - e.y;
+            const dist = Math.hypot(dx, dy);
+            
+            if(dist > 0.01 && dist < 300) {
+                const move = speed * delta;
+                e.x += (dx / dist) * move;
+                e.y += (dy / dist) * move;
+            }
+            
+            e.x = Math.max(30, Math.min(770, e.x));
+            e.y = Math.max(50, Math.min(540, e.y));
         }
     },
     
@@ -156,7 +181,7 @@ window.GameAI = {
             console.log(`💥 Enemy damaged: ${enemy.hp}/${enemy.maxHp} HP`);
             if(enemy.hp <= 0) {
                 this.removeEnemy(enemyId);
-                return true; // enemy defeated
+                return true;
             }
         }
         return false;
