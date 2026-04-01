@@ -24,6 +24,11 @@ window.onload = function() {
             CoreGame.start();
             SoundManager.playMusic('ambient', 0.3);
             startGameLoop();
+            // Заменить существующий объект imagesToLoad на:
+const imagesToLoad = window.GameAssets.images;
+
+// Заменить существующий объект soundsToLoad на:
+const soundsToLoad = window.GameAssets.sounds;
         }
     }
     
