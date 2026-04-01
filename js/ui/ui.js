@@ -42,6 +42,14 @@ window.drawUIPanel = function(ctx, health, hunger, wood, day) {
     // День
     ctx.fillStyle = "#ffaa66";
     ctx.fillText("🌞 Day " + day, 700, 35);
+
+    ctx.fillText(Math.floor(health), 50, 35);   // <-- Math.floor
+    ctx.fillText(Math.floor(hunger), 140, 35);  // <-- Math.floor
+    ctx.fillText(wood, 235, 35);                // <-- wood уже целое число
+    ctx.fillText("🌞 Day " + day, 700, 35);
+    
+    // Рисуем полоски здоровья и голода
+    window.drawHungerHealth(ctx, hunger, health);
 };
 
 // Отрисовка кнопок UI
