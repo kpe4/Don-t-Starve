@@ -76,6 +76,10 @@ function helloCore() {
 }
 
 window.CoreGame = {
+    // Добавить свойства
+    fpsCounter: 0,
+    fpsTimer: 0,
+    currentFPS: 0,
     lastTimestamp: 0,
     gameActive: true,
     
@@ -138,6 +142,15 @@ window.CoreGame = {
     // Обновление логики игры
     update: function(delta) {
         if(!GameState.gameActive) return;
+
+                // Добавить в начало метода
+        this.fpsTimer += delta;
+        if(this.fpsTimer >= 1.0) {
+            this.currentFPS = Math.round(this.fpsCounter / this.fpsTimer);
+            this.fpsCounter = 0;
+            this.fpsTimer = 0;
+        }
+        this.fpsCounter++;
         
         // Движение игрока
         GameState.movePlayer(delta, GameBalance.PLAYER_SPEED);
@@ -331,6 +344,15 @@ window.CoreGame = {
             ctx.lineWidth = 2;
             ctx.stroke();
         }
+
+                // Добавить перед Game Over экраном
+        if(GameBalance.SHOW_FPS) {
+            ctx.fillStyle = "rgba(0,0,0,0.5)";
+            ctx.fillRect(5, 5, 50, 20);
+            ctx.fillStyle = "#0f0";
+            ctx.font = "10px monospace";
+            ctx.fillText(`FPS: ${this.currentFPS}`, 8, 20);
+}
         
         // Game Over
         if(!GameState.gameActive) {
