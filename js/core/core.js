@@ -171,6 +171,16 @@ window.CoreGame = {
             GameState.nextDay();
             console.log(`🌞 Day ${GameState.day}`);
         }
+
+        // После обновления dayTimer добавить:
+        const isNight = SoundManager.isNightTime(GameState.dayTimer, GameBalance.DAY_DURATION);
+        if(isNight && !this.wasNight) {
+            SoundManager.playNightMusic();
+            this.wasNight = true;
+        } else if(!isNight && this.wasNight) {
+            SoundManager.playDayMusic();
+            this.wasNight = false;
+        }
         
         // Спавн врагов
         GameState.spawnTimer += delta;
