@@ -1,3 +1,34 @@
+// Добавить в начало файла
+window.treeShakeEffects = {};
+
+// В методе drawTree заменить на:
+drawTree: function(worldX, worldY) {
+    const screen = this.worldToScreen(worldX, worldY);
+    if(screen.x + 40 < 0 || screen.x - 40 > 800 || screen.y + 50 < 0 || screen.y - 50 > 600) return;
+    
+    // Эффект тряски при сборе
+    let shakeX = 0, shakeY = 0;
+    const treeKey = `${worldX},${worldY}`;
+    if(window.treeShakeEffects && window.treeShakeEffects[treeKey]) {
+        const shake = window.treeShakeEffects[treeKey];
+        shakeX = (Math.random() - 0.5) * shake.intensity;
+        shakeY = (Math.random() - 0.5) * shake.intensity;
+        shake.intensity *= 0.8;
+        if(shake.intensity < 0.5) delete window.treeShakeEffects[treeKey];
+    }
+    
+    const img = AssetLoader.getImage('tree');
+    if(img && img.complete) {
+        this.ctx.drawImage(img, screen.x - 32 + shakeX, screen.y - 48 + shakeY, 64, 64);
+    } else {
+        this.ctx.fillStyle = "#5d3a1a";
+        this.ctx.fillRect(screen.x - 8 + shakeX, screen.y - 30 + shakeY, 16, 50);
+        this.ctx.fillStyle = "#2d5a2c";
+        this.ctx.beginPath();
+        this.ctx.arc(screen.x + shakeX, screen.y - 25 + shakeY, 20, 0, Math.PI * 2);
+        this.ctx.fill();
+    }
+}
 window.GameRenderer = {
     ctx: null,
     
