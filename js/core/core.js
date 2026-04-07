@@ -332,7 +332,8 @@ window.CoreGame = {
         GameRenderer.drawPlayer(GameState.player.x, GameState.player.y, GameState.player.hp);
         
         // Эффекты
-        EffectsManager.draw(GameRenderer.ctx);
+        // Найти строку EffectsManager.draw(ctx) и заменить на:
+        EffectsManager.draw(ctx, GameCamera);
         
         // UI панель
         drawUIPanel(GameRenderer.ctx, 
