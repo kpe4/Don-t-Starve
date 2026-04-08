@@ -102,7 +102,7 @@ window.SoundManager = {
     
     isNightTime: function(dayTimer, dayDuration) {
         return dayTimer > dayDuration * 0.6; // Ночь начинается с 60% дня
-    }
+    },
     playDayMusic: function() {
         if(this.currentDayMusic) this.stopMusic(this.currentDayMusic);
         this.currentDayMusic = 'ambient_day';
