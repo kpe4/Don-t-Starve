@@ -2,73 +2,26 @@
 // Создание игрока, сбор ресурсов, смена дня и ночи, игровой цикл
 //---------------------------------------------------------------
 
+// Основной игровой цикл
 window.CoreGame = {
-    // Добавить свойства
-    fpsCounter: 0,
-    fpsTimer: 0,
-    currentFPS: 0,
     lastTimestamp: 0,
     gameActive: true,
+    lastFrameTime: 0,
     
-    // Запуск игрового цикла
     start: function() {
         this.lastTimestamp = 0;
         console.log("🎮 Game loop started");
-
-        autoGatherResources: function() {
-    if(!GameState.gameActive) return;
-    
-    const autoRadius = 25;  // Радиус автоподбора
-    
-    // Автосбор деревьев
-    getTreesInRange: function(x, y, radius) {
-        return this.trees.filter(tree => 
-            Math.hypot(tree.x - x, tree.y - y) < radius && tree.wood > 0
-        );
-    },
-    const trees = GameState.getTreesInRange(GameState.player.x, GameState.player.y, autoRadius);
-    if(trees.length > 0) {
-        const gain = Math.min(trees[0].wood, GameBalance.GATHER_WOOD_AMOUNT);
-        trees[0].wood -= gain;
-        // После строки с trees[0].wood -= gain; добавить:
-    if(window.treeShakeEffects) {
-        window.treeShakeEffects[`${trees[0].x},${trees[0].y}`] = { intensity: 5 };
-}
-        GameState.addWood(gain);
-        if(window.EffectsManager) {
-            EffectsManager.addPickupEffect(trees[0].x, trees[0].y);
-        }
-        if(trees[0].wood <= 0) {
-            GameState.removeTree(trees[0]);
-        }
-    }
-    
-    // Автосбор ягод
-    getBerriesInRange: function(x, y, radius) {
-        return this.berries.filter(berry => 
-            Math.hypot(berry.x - x, berry.y - y) < radius && berry.count > 0
-        );
-    },
-    const berries = GameState.getBerriesInRange(GameState.player.x, GameState.player.y, autoRadius);
-    if(berries.length > 0) {
-        const gain = Math.min(berries[0].count, GameBalance.GATHER_BERRY_AMOUNT);
-        berries[0].count -= gain;
-        GameState.addHunger(gain * GameBalance.BERRY_HUNGER_RESTORE);
-        if(window.EffectsManager) {
-            EffectsManager.addPickupEffect(berries[0].x, berries[0].y);
-        }
-        if(berries[0].count <= 0) {
-            GameState.removeBerry(berries[0]);
-        }
-    }
-}
-
+        
+        // Запускаем фоновую музыку
+        setTimeout(() => {
+            SoundManager.playMusic('ambient', 0.3);
+        }, 1000);
     },
     
-    // Игровой цикл (вызывается из requestAnimationFrame)
     gameLoop: function(currentTime) {
         if(this.lastTimestamp === 0) {
             this.lastTimestamp = currentTime;
+            requestAnimationFrame((t) => this.gameLoop(t));
             return;
         }
         
@@ -78,25 +31,15 @@ window.CoreGame = {
         }
         this.lastTimestamp = currentTime;
         this.render();
+        
+        requestAnimationFrame((t) => this.gameLoop(t));
     },
     
-    // Обновление логики игры
     update: function(delta) {
         if(!GameState.gameActive) return;
-
-                // Добавить в начало метода
-        this.fpsTimer += delta;
-        if(this.fpsTimer >= 1.0) {
-            this.currentFPS = Math.round(this.fpsCounter / this.fpsTimer);
-            this.fpsCounter = 0;
-            this.fpsTimer = 0;
-        }
-        this.fpsCounter++;
         
         // Движение игрока
         GameState.movePlayer(delta, GameBalance.PLAYER_SPEED);
-
-        this.autoGatherResources();
         
         // Голод
         GameState.player.hunger -= delta * GameBalance.HUNGER_DRAIN_RATE;
@@ -110,95 +53,101 @@ window.CoreGame = {
         if(GameState.dayTimer >= GameBalance.DAY_DURATION) {
             GameState.dayTimer = 0;
             GameState.nextDay();
-            console.log(`🌞 Day ${GameState.day}`);
-        }
-
-        const isNight = SoundManager.isNightTime(GameState.dayTimer, GameBalance.DAY_DURATION);
-        if(isNight && !this.wasNight) {
-            SoundManager.playNightMusic();
-            this.wasNight = true;
-        } else if(!isNight && this.wasNight) {
-            SoundManager.playDayMusic();
-            this.wasNight = false;
         }
         
         // Спавн врагов
         GameState.spawnTimer += delta;
-        if(GameState.spawnTimer >= GameBalance.ENEMY_SPAWN_DELAY && GameAI.getEnemies().length < 3) {
+        if(GameState.spawnTimer >= GameBalance.ENEMY_SPAWN_DELAY && 
+           GameState.enemies.length < GameBalance.MAX_ENEMIES) {
             GameState.spawnTimer = 0;
-            GameAI.spawnEnemy();
+            GameState.spawnEnemy();
         }
         
-        // Движение врагов
+        // Обновление AI
         GameAI.updateEnemies(delta, GameState.player.x, GameState.player.y);
         
-        // Атака врагов на игрока
+        // Проверка атаки врагов
         const attacker = GameAI.checkAttack(GameState.player.x, GameState.player.y);
         if(attacker) {
             GameState.damagePlayer(delta * GameBalance.ENEMY_DAMAGE);
         }
         
+        // Обновление камеры
+        if(window.GameCamera) {
+            GameCamera.update(GameState.player.x, GameState.player.y, delta);
+        }
+        
         // Обновление эффектов
-        EffectsManager.update(delta);
+        if(window.EffectsManager) {
+            EffectsManager.update(delta);
+        }
         
         // Проверка смерти
         if(GameState.player.hp <= 0) {
             GameState.gameActive = false;
             SoundManager.play('gameover');
-            SoundManager.stopMusic('ambient');
+            SoundManager.stopMusic();
         }
     },
     
-    // Сбор ресурсов
     gather: function() {
-        if(!GameState.gameActive) return;
+        if(!GameState.gameActive) return false;
         
-        // Поиск ближайшего дерева
-        let nearestTree = null;
-        let minDist = GameBalance.GATHER_RADIUS;
-        
-        for(let i = 0; i < GameState.trees.length; i++) {
-            const tree = GameState.trees[i];
-            const dist = Math.hypot(GameState.player.x - tree.x, GameState.player.y - tree.y);
-            if(dist < minDist && tree.wood > 0) {
-                minDist = dist;
-                nearestTree = { tree, index: i };
-            }
-        }
-        
-        if(nearestTree) {
-            const gain = Math.min(nearestTree.tree.wood, GameBalance.GATHER_WOOD_AMOUNT);
-            nearestTree.tree.wood -= gain;
+        // Сбор дерева
+        const trees = GameState.getTreesInRange(GameState.player.x, GameState.player.y, GameBalance.GATHER_RADIUS);
+        if(trees.length > 0) {
+            const gain = Math.min(trees[0].wood, GameBalance.GATHER_WOOD_AMOUNT);
+            trees[0].wood -= gain;
             GameState.addWood(gain);
-            EffectsManager.addPickupEffect(nearestTree.tree.x, nearestTree.tree.y);
-            
-            if(nearestTree.tree.wood <= 0) {
-                GameState.removeTree(nearestTree.index);
+            if(window.EffectsManager) {
+                EffectsManager.addPickupEffect(trees[0].x, trees[0].y);
             }
+            
+            if(trees[0].wood <= 0) {
+                GameState.removeTree(trees[0]);
+            }
+            SoundManager.play('gather');
             return true;
         }
         
-        // Поиск ягод
-        let nearestBerry = null;
-        minDist = GameBalance.GATHER_RADIUS;
-        
-        for(let i = 0; i < GameState.berries.length; i++) {
-            const berry = GameState.berries[i];
-            const dist = Math.hypot(GameState.player.x - berry.x, GameState.player.y - berry.y);
-            if(dist < minDist && berry.count > 0) {
-                minDist = dist;
-                nearestBerry = { berry, index: i };
+        // Сбор ягод
+        const berries = GameState.getBerriesInRange(GameState.player.x, GameState.player.y, GameBalance.GATHER_RADIUS);
+        if(berries.length > 0) {
+            const gain = Math.min(berries[0].count, GameBalance.GATHER_BERRY_AMOUNT);
+            berries[0].count -= gain;
+            GameState.addHunger(gain * GameBalance.BERRY_HUNGER_RESTORE);
+            if(window.EffectsManager) {
+                EffectsManager.addPickupEffect(berries[0].x, berries[0].y);
             }
+            
+            if(berries[0].count <= 0) {
+                GameState.removeBerry(berries[0]);
+            }
+            SoundManager.play('gather');
+            return true;
         }
         
-        if(nearestBerry) {
-            const gain = Math.min(nearestBerry.berry.count, GameBalance.GATHER_BERRY_AMOUNT);
-            nearestBerry.berry.count -= gain;
-            GameState.addHunger(gain * GameBalance.BERRY_HUNGER_RESTORE);
-            EffectsManager.addPickupEffect(nearestBerry.berry.x, nearestBerry.berry.y);
+        return false;
+    },
+    
+    attack: function() {
+        if(!GameState.gameActive) return false;
+        
+        const nearest = GameAI.findNearestEnemy(
+            GameState.player.x, 
+            GameState.player.y, 
+            GameBalance.ATTACK_RADIUS
+        );
+        
+        if(nearest) {
+            const defeated = GameAI.damageEnemy(nearest, GameBalance.PLAYER_DAMAGE);
+            if(window.EffectsManager) {
+                EffectsManager.addHitEffect(nearest.x, nearest.y);
+            }
+            SoundManager.play('hit');
             
-            if(nearestBerry.berry.count <= 0) {
-                GameState.removeBerry(nearestBerry.index);
+            if(defeated) {
+                console.log("💀 Enemy defeated!");
             }
             return true;
         }
@@ -206,111 +155,66 @@ window.CoreGame = {
         return false;
     },
     
-    // Атака врага
-    attack: function() {
-    if(!GameState.gameActive) return;
-    
-    const nearest = GameAI.findNearestEnemy(
-        GameState.player.x, 
-        GameState.player.y, 
-        GameBalance.ATTACK_RADIUS
-    );
-    
-    if(nearest) {
-        const enemyId = nearest.id;
-        const defeated = GameAI.damageEnemy(enemyId, GameBalance.PLAYER_DAMAGE);
-        EffectsManager.addHitEffect(nearest.x, nearest.y);
-        SoundManager.play('click');  // <-- Добавить эту строку
-        
-        if(defeated) {
-            console.log("💀 Enemy defeated!");
-        }
-        return true;
-    }
-    
-    return false;
-},
-    
-    // Перезапуск игры
     restart: function() {
         GameState.reset();
         GameAI.clearEnemies();
-        EffectsManager.effects = [];
+        if(window.GameCamera) GameCamera.reset();
+        if(window.EffectsManager) EffectsManager.effects = [];
         SoundManager.playMusic('ambient', 0.3);
         console.log("🔄 Game restarted!");
     },
     
-    // Отрисовка (вызывается из gameLoop)
     render: function() {
+        if(!GameRenderer.ctx || !GameState) return;
+        
+        const ctx = GameRenderer.ctx;
+        
+        // Очистка и фон
         GameRenderer.drawGround();
         
         // Деревья
-        for(let tree of GameState.trees) {
+        for(let tree of GameState.world.trees) {
             GameRenderer.drawTree(tree.x, tree.y);
         }
         
         // Ягоды
-        for(let berry of GameState.berries) {
+        for(let berry of GameState.world.berries) {
             GameRenderer.drawBerry(berry.x, berry.y, berry.count);
         }
         
         // Враги
-        for(let enemy of GameAI.getEnemies()) {
-            GameRenderer.drawEnemy(enemy.x, enemy.y, enemy.hp, enemy.maxHp);
+        for(let enemy of GameState.enemies) {
+            GameRenderer.drawEnemy(enemy.x, enemy.y, enemy.hp, enemy.maxHp, enemy.type);
         }
-
-        // Добавить после отрисовки врагов
-        if(GameBalance.FOG_OF_WAR_ENABLED) {
-            GameRenderer.drawFogOfWar(GameState.player.x, GameState.player.y, GameBalance.VISION_RADIUS);
-        }    
         
         // Игрок
         GameRenderer.drawPlayer(GameState.player.x, GameState.player.y, GameState.player.hp);
         
         // Эффекты
-
-        EffectsManager.draw(ctx, GameCamera);
-        
-        // UI панель
-        drawUIPanel(GameRenderer.ctx, 
-            GameState.player.hp, 
-            GameState.player.hunger, 
-            GameState.player.wood, 
-            GameState.day
-        );
-        
-        // Кнопки
-        drawUIButtons(GameRenderer.ctx);
-        
-        // После отрисовки UI панели и кнопок добавить:
-        // Эффекты
-        EffectsManager.draw(GameRenderer.ctx);
-        // Индикатор цели
-        if(GameState.player.targetX !== null) {
-            const ctx = GameRenderer.ctx;
-            ctx.beginPath();
-            ctx.arc(GameState.player.targetX, GameState.player.targetY, 8, 0, Math.PI * 2);
-            ctx.strokeStyle = "#ffaa44";
-            ctx.lineWidth = 2;
-            ctx.stroke();
-        }
-
-
-                // Добавить перед Game Over экраном
-        if(GameBalance.SHOW_FPS) {
-            ctx.fillStyle = "rgba(0,0,0,0.5)";
-            ctx.fillRect(5, 5, 50, 20);
-            ctx.fillStyle = "#0f0";
-            ctx.font = "10px monospace";
-            ctx.fillText(`FPS: ${this.currentFPS}`, 8, 20);
+        if(window.EffectsManager && GameCamera) {
+            EffectsManager.draw(ctx, GameCamera);
         }
         
-        // Добавить перед Game Over экраном
-        drawLowHealthOverlay(ctx, GameState.player.hp);
-
-        // Game Over
+        // UI
+        if(window.drawUIPanel) {
+            drawUIPanel(ctx, 
+                GameState.player.hp, 
+                GameState.player.hunger, 
+                GameState.player.wood, 
+                GameState.day
+            );
+        }
+        
+        if(window.drawUIButtons) {
+            drawUIButtons(ctx);
+        }
+        
+        if(window.drawMinimap && GameCamera) {
+            drawMinimap(ctx, GameCamera);
+        }
+        
+        // Game Over экран
         if(!GameState.gameActive) {
-            const ctx = GameRenderer.ctx;
             ctx.fillStyle = "rgba(0,0,0,0.8)";
             ctx.fillRect(0, 0, 800, 600);
             ctx.fillStyle = "#ff6666";
