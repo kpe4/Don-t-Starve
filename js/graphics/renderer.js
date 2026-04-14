@@ -11,6 +11,19 @@ window.GameRenderer = {
         console.log("🎨 GameRenderer initialized");
     },
 
+    drawUIcon: function(iconName, x, y, value) {
+        const img = AssetLoader.getImage(iconName);
+        if(img && img.complete) {
+            this.ctx.drawImage(img, x, y, 28, 28);
+        } else {
+            this.ctx.fillStyle = iconName === 'heart' ? "#ff3366" : "#ffaa33";
+            this.ctx.fillRect(x, y, 28, 28);
+        }
+        this.ctx.fillStyle = "white";
+        this.ctx.font = "bold 18px monospace";
+        this.ctx.fillText(Math.floor(value), x + 35, y + 22);
+    },
+
     // Отрисовка фона земли
     // Обновлено 06.04 @Gabryelf
     drawGround: function () {
