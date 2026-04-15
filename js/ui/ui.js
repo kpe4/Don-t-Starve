@@ -16,6 +16,23 @@ window.drawUIPanel = function(ctx, health, hunger, wood, day) {
     ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
     ctx.fillRect(0, 0, 800, 55);
 
+  
+   
+    if(window.GameRenderer) {
+        GameRenderer.drawUIcon('heart', 10, 12, health);
+        GameRenderer.drawUIcon('meat', 100, 12, hunger);
+    }
+    
+    // Здоровье с иконкой сердца
+    const heartImg = AssetLoader.getImage('heart');
+    if(heartImg && heartImg.complete) {
+        ctx.drawImage(heartImg, 15, 12, 28, 28);
+    } else {
+        ctx.fillStyle = "#ff4444";
+        ctx.fillRect(15, 12, 28, 28);
+    }
+
+  
     ctx.fillStyle = "white";
     ctx.font = "bold 18px monospace";
 

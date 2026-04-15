@@ -219,6 +219,31 @@ window.GameState = {
         const index = this.world.berries.indexOf(berry);
         if(index > -1) this.world.berries.splice(index, 1);
     }
+
+    createEnemyBehavior: function(type, x, y) {
+        switch(type) {
+            case 'patrol':
+                return {
+                    patrolPoints: [
+                        { x: x - 100 + Math.random() * 200, y: y - 100 + Math.random() * 200 },
+                        { x: x - 100 + Math.random() * 200, y: y - 100 + Math.random() * 200 },
+                        { x: x - 100 + Math.random() * 200, y: y - 100 + Math.random() * 200 }
+                    ],
+                    currentPatrolIndex: 0
+                };
+            case 'guard':
+                return {
+                    guardPoint: { x: x, y: y, radius: 80 }
+                };
+            case 'wander':
+                return {
+                    wanderAngle: Math.random() * Math.PI * 2,
+                    wanderTimer: 0
+                };
+            default:
+                return {};
+        }
+    },
 };
 
 console.log("📊 Game State ready");
