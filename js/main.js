@@ -111,24 +111,3 @@ window.addEventListener('DOMContentLoaded', () => {
     console.log("✅ Game initialized successfully!");
 });
 
-// Добавляем недостающие функции
-window.drawPlayerBody = window.drawPlayerBody || function(ctx, x, y) {
-    ctx.fillStyle = 'yellow';
-    ctx.beginPath();
-    ctx.arc(x, y, 15, 0, Math.PI * 2);
-    ctx.fill();
-};
-
-window.drawPlayerEyes = window.drawPlayerEyes || function(ctx, x, y) {
-    ctx.fillStyle = 'white';
-    ctx.beginPath();
-    ctx.arc(x - 5, y - 5, 3, 0, Math.PI * 2);
-    ctx.arc(x + 5, y - 5, 3, 0, Math.PI * 2);
-    ctx.fill();
-    
-    ctx.fillStyle = 'black';
-    ctx.beginPath();
-    ctx.arc(x - 5, y - 5, 1.5, 0, Math.PI * 2);
-    ctx.arc(x + 5, y - 5, 1.5, 0, Math.PI * 2);
-    ctx.fill();
-};
