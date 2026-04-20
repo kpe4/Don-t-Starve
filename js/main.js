@@ -1,7 +1,6 @@
 // js/main.js
 window.addEventListener('DOMContentLoaded', () => {
     console.log("🎮 Starting Don't Starve Clone...");
-
     
     // 1. Создаем камеру
     const camera = new GameCamera();
@@ -66,43 +65,6 @@ window.addEventListener('DOMContentLoaded', () => {
         // Отрисовка
         coreGame.render(renderer);
         
-
-    
-    // Инициализация камеры
-    window.GameCamera = window.GameCamera || {};
-    if(typeof GameCamera.init === 'function') {
-        GameCamera.init();
-    }
-    
-    // Инициализация рендерера с камерой
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
-    GameRenderer.init(ctx, GameCamera);
-    
-    // Инициализация обработчика ввода с камерой
-    InputHandler.init(canvas, GameCamera);
-    
-    // Инициализация игрового состояния
-    GameState.init();
-    
-    // Настройка звуков (заглушка)
-    SoundManager.playMusic = function(music, volume) {
-        console.log(`🎵 Playing: ${music}`);
-    };
-    SoundManager.stopMusic = function(music) {
-        console.log(`🔇 Stopping: ${music}`);
-    };
-    SoundManager.play = function(sound) {
-        console.log(`🔊 Sound: ${sound}`);
-    };
-    
-    // Запуск игрового цикла
-    CoreGame.start();
-    
-    // Анимационный цикл
-    function animate(timestamp) {
-        CoreGame.gameLoop(timestamp);
-
         requestAnimationFrame(animate);
     }
     
@@ -110,4 +72,3 @@ window.addEventListener('DOMContentLoaded', () => {
     
     console.log("✅ Game initialized successfully!");
 });
-
