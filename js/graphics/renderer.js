@@ -114,6 +114,24 @@ class GameRenderer {
             this.ctx.fill();
         }
     }
+     
+    drawStone(x, y) {
+        const screen = this.worldToScreen(x, y);
+        if (!this.isVisible(screen, 50)) return;
+
+        const img = window.assetLoader.getImage('stone');
+        if (img && img.complete) {
+            this.ctx.drawImage(img, screen.x - 32, screen.y - 48, 64, 64);
+        } else {
+            this.ctx.fillStyle = "#888888";
+            this.ctx.fillRect(screen.x - 8, screen.y - 30, 16, 50);
+
+            this.ctx.fillStyle = "#888888";
+            this.ctx.beginPath();
+            this.ctx.arc(screen.x, screen.y - 25, 20, 0, Math.PI * 2);
+            this.ctx.fill();
+        }
+    }
 
     drawBerry(x, y, count) {
         const screen = this.worldToScreen(x, y);
@@ -244,4 +262,5 @@ class GameRenderer {
         this.ctx.fillStyle = "#fff";
         this.ctx.fillText("Press RESTART or R", 340, 360);
     }
+
 }
