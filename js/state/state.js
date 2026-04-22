@@ -2,7 +2,7 @@ class GameState {
     constructor() {
         this.gameActive = true;
             this.player = {
-                x: 1200, y: 900, hp: 100, hunger: 100, wood: 0,
+                x: 1200, y: 900, hp: 100, hunger: 100, wood: 0, stone: 0,
                 targetX: null, targetY: null
             };
             this.world = { trees: [], berries: [] };
@@ -10,6 +10,7 @@ class GameState {
             this.day = 1;
             this.dayTimer = 0;
             this.spawnTimer = 0;
+            this.world.stones = []
     }
         
     init() {
@@ -24,6 +25,7 @@ class GameState {
     generateWorld() {
         this.world.trees = [];
         this.world.berries = [];
+        this.world.stones = [];
         
         // Генерация деревьев кластерами
         for (let c = 0; c < 12; c++) {
@@ -58,6 +60,22 @@ class GameState {
                 });
             }
         }
+        // камни
+        for (let c = 0; c < 12; c++) {
+            const centerX = 200 + Math.random() * (window.gameConfig.WORLD_WIDTH - 400);
+            const centerY = 150 + Math.random() * (window.gameConfig.WORLD_HEIGHT - 300);
+            const clusterSize = 4 + Math.floor(Math.random() * 6);
+            
+            for (let i = 0; i < clusterSize; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const radius = 40 + Math.random() * 70;
+                this.world.trees.push({
+                    x: this.clampCoord(centerX + Math.cos(angle) * radius),
+                    y: this.clampCoord(centerY + Math.sin(angle) * radius),
+                    stone: 5 + Math.floor(Math.random() * 11)
+                });
+            }
+        }
         
         console.log(`🌍 World generated: ${this.world.trees.length} trees, ${this.world.berries.length} berries`);
     }
@@ -70,6 +88,7 @@ class GameState {
             hp: 100,
             hunger: 100,
             wood: 0,
+            stone: 0,
             targetX: null,
             targetY: null
         };
@@ -156,6 +175,10 @@ class GameState {
     addWood(amount) {
         this.player.wood += amount; 
     }
+
+    addStone(amount) {
+        this.player.stone += amount;
+    }
     
     addHunger(amount) {
         this.player.hunger = Math.min(100, this.player.hunger + amount);
@@ -187,6 +210,12 @@ class GameState {
     getBerriesInRange(x, y, radius) {
         return this.world.berries.filter(berry => 
             Math.hypot(berry.x - x, berry.y - y) < radius && berry.count > 0);
+    }
+
+    getStonesInRange(x, y, radius) {
+        return this.world.stones.filter(stone => 
+            Math.hypot(stone.x - x, stone.y - y) < radius && stone.stone > 0
+        );
     }
     
     removeTree(tree) {

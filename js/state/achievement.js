@@ -8,6 +8,7 @@ class AchievementSystem {
         };
         this.notification = null;
         this.notifTimer = 0;
+        this.panelOpen = false;
     }
      addWood(amount) {
         if (!this.achievements.wood.done) {
@@ -33,6 +34,10 @@ class AchievementSystem {
         this.notifTimer = 3;
         this.gameState.healPlayer(20);
     }
+
+    togglePanel() {
+        this.panelOpen = !this.panelOpen;
+    }
     
     update(delta) {
         if (this.notifTimer > 0) {
@@ -50,4 +55,35 @@ class AchievementSystem {
             ctx.fillText(this.notification, 220, 125);
         }
     }
+
+    drawPanel(ctx) {
+        if (!this.panelOpen) return;
+    
+        // фон окна
+        ctx.fillStyle = "rgba(0,0,0,0.85)";
+        ctx.fillRect(200, 100, 400, 250);
+    
+        // заголовок
+        ctx.fillStyle = "#ffd700";
+        ctx.font = "bold 18px monospace";
+        ctx.fillText("ACHIEVEMENTS", 300, 130);
+    
+        // список достижений
+        ctx.font = "14px monospace";
+    
+        let y = 160;
+    
+        for (const key in this.achievements) {
+            const ach = this.achievements[key];
+    
+            ctx.fillStyle = ach.done ? "#66ff66" : "white";
+    
+            const text = `${ach.name}: ${ach.current}/${ach.required}`;
+            ctx.fillText(text, 220, y);
+    
+            y += 30;
+        }
+    }
+    
+    
 }

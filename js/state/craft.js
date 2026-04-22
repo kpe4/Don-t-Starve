@@ -3,23 +3,53 @@ class CraftingSystem {
         this.gameState = gameState;
         this.coreGame = coreGame;
         this.menuOpen = false;
+        this.recipes = {
+            spear: {
+                cost: 25,
+                type: 'wood',
+                effect: () => {
+                    this.coreGame.attackDamage = 28;
+                    this.showMsg("⚔️ Spear crafted! +8 damage");
+                }
+            },
+            heal: {
+                cost: 20,
+                type: 'wood',
+                effect: () => {
+                    this.gameState.healPlayer(20);
+                    this.showMsg("💚 +20 HP");
+                }
+            }
+        };
     }
-    craft(item) {
+    ccraft(itemId) {
         if (!this.gameState.gameActive) return false;
-        
-        if (item === 'spear' && this.gameState.player.wood >= 25) {
-            this.gameState.player.wood -= 25;
-            this.coreGame.attackDamage = 28;
-            this.showMsg("⚔️ Spear crafted! +8 damage");
-            return true;
+    
+        const recipe = this.recipes[itemId];
+    
+        // ❗ защита от ошибки
+        if (!recipe) {
+            console.log("❌ Unknown recipe:", itemId, recipe);
+            return false;
         }
-        if (item === 'heal' && this.gameState.player.wood >= 20) {
-            this.gameState.player.wood -= 20;
-            this.gameState.healPlayer(20);
-            this.showMsg("💚 +20 HP");
-            return true;
+    
+        console.log(itemId, recipe);
+    
+        // проверка ресурсов
+        if (recipe.type === 'wood' && this.gameState.player.wood < recipe.cost) {
+            this.showMsg("❌ Not enough wood");
+            return false;
         }
-        return false;
+    
+        // списание ресурса
+        if (recipe.type === 'wood') {
+            this.gameState.player.wood -= recipe.cost;
+        }
+    
+        // эффект крафта
+        recipe.effect();
+    
+        return true;
     }
     showMsg(msg) {
         if (this.coreGame.showNotification) this.coreGame.showNotification(msg);
@@ -48,7 +78,10 @@ class CraftingSystem {
     }
     
     handleKey(key) {
-        if (key === '1') this.craft('spear');
-        if (key === '2') this.craft('heal');
+        if (!this.menuOpen) return;
+    
+        if (this.recipes[key]) {
+            this.craft(key);
+        }
     }
 }
