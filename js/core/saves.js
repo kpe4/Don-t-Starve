@@ -12,6 +12,7 @@ class SaveSystem {
     save() {
       const data = {
           wood: this.gameState.player.wood,
+          stone: this.gameState.player.stone,
           day: this.gameState.day,
           hp: this.gameState.player.hp,
           hunger: this.gameState.player.hunger,
@@ -28,6 +29,7 @@ class SaveSystem {
       }
       const data = JSON.parse(raw);
       this.gameState.player.wood = data.wood;
+      this.gameState.player.stone = data.stone;
       this.gameState.day = data.day;
       this.gameState.player.hp = data.hp;
       this.gameState.player.hunger = data.hunger;

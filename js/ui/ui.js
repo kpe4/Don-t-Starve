@@ -86,6 +86,22 @@ window.drawUIPanel = function(ctx, health, hunger, wood, day) {
     // 📊 Полоски (чуть ниже панели)
     //--------------------------------------
     window.drawHungerHealth(ctx, hunger, health);
+
+    // Древесина
+    this.ctx.font = "22px monospace";
+    this.ctx.fillStyle = "#ffde9c";
+    this.ctx.fillText("🌲", 210, 35); 
+    this.ctx.font = "bold 18px monospace";
+    this.ctx.fillText(window.gameState.player.wood, 235, 35);
+
+    // Камень
+    this.ctx.font = "22px monospace";
+    this.ctx.fillStyle = "#cccccc";
+    this.ctx.fillText("🪨", 290, 35);
+    
+    this.ctx.font = "bold 18px monospace";
+    this.ctx.fillStyle = "white";
+    this.ctx.fillText(window.gameState.player.stone, 315, 35);
 };
 
 //--------------------------------------
