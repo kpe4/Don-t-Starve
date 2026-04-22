@@ -130,6 +130,32 @@ class CoreGame {
             this.soundManager.play('gather');
             return true;
         }
+
+         // Поиск камней рядом
+        const stones = this.gameState.getStonesInRange(
+            this.gameState.player.x, 
+            this.gameState.player.y, 
+            this.gameBalance.GATHER_RADIUS
+        );
+        
+        if (stones.length > 0) {
+            const gain = Math.min(stones[0].amount, this.gameBalance.GATHER_STONE_AMOUNT);
+            stones[0].amount -= gain;
+            this.gameState.addStone(gain);
+            
+            // Визуальный эффект (ВОТ ОН)
+            if (this.effectsManager) {
+                this.effectsManager.addStonePickupEffect(stones[0].x, stones[0].y);
+            }
+            
+            // Удаляем камень если закончился
+            if (stones[0].amount <= 0) {
+                this.gameState.removeStone(stones[0]);
+            }
+            
+            this.soundManager.play('gather');
+            return true;
+        }
         
         // НОВЫЙ КОД: Поиск камней рядом
         const stones = this.gameState.getStonesInRange(
