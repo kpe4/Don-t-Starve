@@ -28,8 +28,6 @@ window.addEventListener('DOMContentLoaded', () => {
         camera
     );
 
-    // Добавить после создания coreGame, перед inputHandler:
-
 // Создаем мини-карту
     const minimap = new MiniMap(coreGame, camera);
     coreGame.minimap = minimap;
